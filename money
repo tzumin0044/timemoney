@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>勞基法標準 - 智慧加班費計算小工具</title>
+    <title>勞基法標準 - 智慧加班費計算小工具 (高精度分鐘版)</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter & Noto Sans TC -->
@@ -45,7 +45,7 @@
                         💼 智慧加班費計算小工具
                     </h1>
                     <p class="text-indigo-200 text-sm mt-1">
-                        自動帶入週休假日，支援手動調班。只需填入每日加班時數，免按計算鍵即時算清。
+                        自動帶入週休假日，支援分鐘級精密計算、自訂調整班別，免手動計算。
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -573,7 +573,7 @@
             calculateAll();
             saveStateToLocalStorage();
             
-            // 如果是在列印模式下切換，同步更新列印文字 (正常操作很少在列印時點選)
+            // 如果是在列印模式下切換，同步更新列印文字
             generateCalendar(); 
         }
 
