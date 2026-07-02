@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>勞基法標準 - 智慧加班費計算小工具 (高精度分鐘版)</title>
+    <title>勞基法標準 - 智慧加班費計算小工具 (AI 增強高精度版)</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter & Noto Sans TC -->
@@ -39,13 +39,14 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="bg-indigo-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">勞基法最新標準</span>
+                        <span class="bg-purple-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">✨ AI 智慧增強版</span>
                         <span class="text-xs text-indigo-200">2026 專業版</span>
                     </div>
                     <h1 class="text-2xl md:text-3xl font-extrabold mt-1 tracking-tight flex items-center gap-2">
                         💼 智慧加班費計算小工具
                     </h1>
                     <p class="text-indigo-200 text-sm mt-1">
-                        自動帶入週休假日，支援分鐘級精密計算、自訂調整班別，免手動計算。
+                        自動帶入週休假日，支援分鐘級精密計算、自訂調整班別、✨ AI 智慧事由生成與法規諮詢。
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -195,14 +196,40 @@
                         </div>
                     </div>
 
+                    <!-- AI 加班健康與法規分析按鈕 -->
+                    <div class="pt-3 border-t border-indigo-800/80">
+                        <button onclick="generateAIReport()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs py-2.5 px-4 rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-1.5">
+                            ✨ 產生 AI 當月加班與健康分析
+                        </button>
+                    </div>
+
                     <!-- 快速操作區 -->
-                    <div class="pt-2 border-t border-indigo-800/80 flex gap-2">
+                    <div class="pt-2 flex gap-2">
                         <button onclick="clearAllHours()" class="flex-1 bg-indigo-850 hover:bg-indigo-800 text-indigo-200 text-xs py-2 rounded-lg font-medium transition-all">
                             🧹 清空時數
                         </button>
                         <button onclick="resetCalendarTypes()" class="flex-1 bg-indigo-850 hover:bg-indigo-800 text-indigo-200 text-xs py-2 rounded-lg font-medium transition-all">
                             🔄 重置班別
                         </button>
+                    </div>
+                </div>
+
+                <!-- 3. AI 智慧勞基法諮詢助理 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-3 no-print">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        🤖 AI 勞基法智慧諮詢助理
+                    </h3>
+                    <p class="text-[11px] text-slate-400">對加班規則、特休、彈性工時有疑問？直接問我吧！</p>
+                    <div class="space-y-2">
+                        <textarea id="aiQuestionInput" rows="2" placeholder="例如：休息日加班不滿一小時怎麼算？颱風天出勤有加倍嗎？" 
+                            class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all resize-none"></textarea>
+                        <button onclick="askAILaborLaw()" id="btnAskAI" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5">
+                            ✨ 詢問智慧法規助理
+                        </button>
+                    </div>
+                    <!-- 諮詢結果顯示區 -->
+                    <div id="aiConsultAnswer" class="hidden bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 text-xs text-slate-700 max-h-48 overflow-y-auto whitespace-pre-line leading-relaxed">
+                        <!-- 回答內容將動態填入 -->
                     </div>
                 </div>
 
@@ -252,14 +279,15 @@
                         <table class="min-w-full divide-y divide-slate-100 text-left">
                             <thead class="bg-slate-50/75 print:bg-slate-100">
                                 <tr>
-                                    <th scope="col" class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-24">日期</th>
-                                    <th scope="col" class="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-16">星期</th>
-                                    <th scope="col" class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-36 no-print">班別/日別</th>
+                                    <th scope="col" class="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-20">日期</th>
+                                    <th scope="col" class="px-2 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-14">星期</th>
+                                    <th scope="col" class="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-32 no-print">班別/日別</th>
                                     <!-- 列印時顯示的日別名稱 -->
-                                    <th scope="col" class="hidden print:table-cell px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-24">班別</th>
-                                    <th scope="col" class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-36">加班時數</th>
-                                    <th scope="col" class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">勞基法計算明細</th>
-                                    <th scope="col" class="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right w-28">當日加班費</th>
+                                    <th scope="col" class="hidden print:table-cell px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-20">班別</th>
+                                    <th scope="col" class="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider w-36">加班時數</th>
+                                    <th scope="col" class="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">加班事由 / 備註</th>
+                                    <th scope="col" class="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell w-40">勞基法計算明細</th>
+                                    <th scope="col" class="px-3 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider text-right w-24">當日加班費</th>
                                 </tr>
                             </thead>
                             <tbody id="calendarBody" class="divide-y divide-slate-100 bg-white">
@@ -289,6 +317,28 @@
         </div>
     </main>
 
+    <!-- Modal: AI report -->
+    <div id="aiReportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white rounded-2xl max-w-xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-purple-50 to-indigo-50">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    ✨ 當月加班健康與勞基法合規分析報告
+                </h3>
+                <button onclick="closeAIReportModal()" class="text-slate-400 hover:text-slate-600 transition-all text-xl p-1">
+                    ✕
+                </button>
+            </div>
+            <div class="p-6 space-y-4 text-sm text-slate-700 overflow-y-auto leading-relaxed" id="aiReportContent">
+                <!-- AI Report will be populated here -->
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <button onclick="closeAIReportModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-semibold transition-all shadow-md">
+                    關閉報告
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Help & Labor Standards Explanation -->
     <div id="helpModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
         <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col">
@@ -302,7 +352,7 @@
                 </button>
             </div>
             <!-- Modal Body -->
-            <div class="p-6 space-y-6 text-sm text-slate-600 overflow-y-auto leading-relaxed">
+            <div class="p-6 space-y-6 text-sm text-slate-600 overflow-y-auto leading-relaxed font-sans">
                 <!-- 1. 平日 -->
                 <div class="space-y-2">
                     <h4 class="font-bold text-base text-blue-600 border-l-4 border-blue-500 pl-2">平日 (工作日) 加班費率</h4>
@@ -377,9 +427,9 @@
         };
 
         // 勞基法加成係數常數
-        const RATE_1_34 = 1.34; // 1 又 1/3 (1.333...) 精簡取 1.34 
-        const RATE_1_67 = 1.67; // 1 又 2/3 (1.666...) 精簡取 1.67
-        const RATE_2_67 = 2.67; // 2 又 2/3 (2.666...) 精簡取 2.67
+        const RATE_1_34 = 1.34; 
+        const RATE_1_67 = 1.67; 
+        const RATE_2_67 = 2.67; 
 
         // 頁面載入時初始化
         window.onload = function() {
@@ -460,7 +510,7 @@
                     hours = parseInt(oldCalendarMap[dateStr].hours) || 0;
                     minutes = parseInt(oldCalendarMap[dateStr].minutes) || 0;
                     type = oldCalendarMap[dateStr].type;
-                    note = oldCalendarMap[dateStr].note;
+                    note = oldCalendarMap[dateStr].note || '';
                 }
 
                 state.calendar.push({
@@ -504,11 +554,11 @@
 
                 tr.innerHTML = `
                     <!-- 日期 -->
-                    <td class="px-4 py-3 text-sm font-semibold text-slate-700">
+                    <td class="px-3 py-3 text-sm font-semibold text-slate-700">
                         ${state.month}/${dayData.day}
                     </td>
                     <!-- 星期 -->
-                    <td class="px-3 py-3 text-sm">
+                    <td class="px-2 py-3 text-sm">
                         <span class="px-2 py-0.5 rounded text-xs font-bold ${
                             dayData.dayOfWeekNum === 0 ? 'text-red-600 bg-red-100/60' : 
                             dayData.dayOfWeekNum === 6 ? 'text-amber-600 bg-amber-100/60' : 'text-slate-500'
@@ -517,7 +567,7 @@
                         </span>
                     </td>
                     <!-- 班別選擇 (下拉選單 - 僅在螢幕顯示) -->
-                    <td class="px-4 py-3 text-sm no-print">
+                    <td class="px-3 py-3 text-sm no-print">
                         <select onchange="changeDayType(${idx}, this.value)" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium text-slate-700 focus:ring-1 focus:ring-indigo-500">
                             <option value="workday" ${dayData.type === 'workday' ? 'selected' : ''}>💼 工作日</option>
                             <option value="restday" ${dayData.type === 'restday' ? 'selected' : ''}>🟡 休息日</option>
@@ -526,37 +576,53 @@
                         </select>
                     </td>
                     <!-- 班別選擇 (列印專用純文字) -->
-                    <td class="hidden print:table-cell px-4 py-3 text-xs text-slate-700 font-semibold">
+                    <td class="hidden print:table-cell px-3 py-3 text-xs text-slate-700 font-semibold">
                         ${typeNames[dayData.type]}
                     </td>
-                    <!-- 加班時數輸入 (時、分拆分) -->
-                    <td class="px-4 py-3 text-sm">
-                        <div class="flex items-center gap-1.5 flex-wrap">
+                    <!-- 加班時數輸入 (時、分拆分) + ENTER鍵與自選全取功能 -->
+                    <td class="px-3 py-3 text-sm">
+                        <div class="flex items-center gap-1 flex-wrap">
                             <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:bg-white transition-all">
-                                <input type="number" min="0" max="24" value="${dayData.hours || ''}" placeholder="0"
+                                <input type="number" id="hourInput_${idx}" min="0" max="24" value="${dayData.hours || ''}" placeholder="0"
                                     oninput="updateDayTime(${idx}, 'hours', this.value)"
-                                    class="w-8 text-center font-semibold text-slate-800 text-xs bg-transparent border-none outline-none focus:ring-0 p-0">
+                                    onkeydown="handleEnterKey(event, ${idx}, 'hours')"
+                                    onfocus="this.select()"
+                                    class="w-6 text-center font-semibold text-slate-800 text-xs bg-transparent border-none outline-none focus:ring-0 p-0">
                                 <span class="text-[10px] text-slate-400 mx-0.5 font-medium">時</span>
-                                <input type="number" min="0" max="59" value="${dayData.minutes || ''}" placeholder="0"
+                                <input type="number" id="minuteInput_${idx}" min="0" max="59" value="${dayData.minutes || ''}" placeholder="0"
                                     oninput="updateDayTime(${idx}, 'minutes', this.value)"
-                                    class="w-8 text-center font-semibold text-slate-800 text-xs bg-transparent border-none outline-none focus:ring-0 p-0">
+                                    onkeydown="handleEnterKey(event, ${idx}, 'minutes')"
+                                    onfocus="this.select()"
+                                    class="w-6 text-center font-semibold text-slate-800 text-xs bg-transparent border-none outline-none focus:ring-0 p-0">
                                 <span class="text-[10px] text-slate-400 ml-0.5 font-medium">分</span>
                             </div>
                             
                             <!-- 快速加時數與分鐘按鈕 (僅在螢幕顯示) -->
-                            <div class="flex gap-1 no-print">
-                                <button onclick="quickAddHours(${idx}, 1)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] w-6 h-6 rounded flex items-center justify-center font-bold transition-all">+1h</button>
-                                <button onclick="quickAddHours(${idx}, 2)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] w-6 h-6 rounded flex items-center justify-center font-bold transition-all">+2h</button>
-                                <button onclick="quickAddMinutes(${idx}, 30)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] px-1.5 h-6 rounded flex items-center justify-center font-bold transition-all">+30m</button>
+                            <div class="flex gap-0.5 no-print">
+                                <button onclick="quickAddHours(${idx}, 1)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[9px] w-5 h-5 rounded flex items-center justify-center font-bold transition-all">+1h</button>
+                                <button onclick="quickAddHours(${idx}, 2)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[9px] w-5 h-5 rounded flex items-center justify-center font-bold transition-all">+2h</button>
+                                <button onclick="quickAddMinutes(${idx}, 30)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[9px] px-1 h-5 rounded flex items-center justify-center font-bold transition-all">+30m</button>
                             </div>
                         </div>
                     </td>
+                    <!-- 加班事由與備註 + AI 產生 -->
+                    <td class="px-3 py-3 text-sm">
+                        <div class="flex items-center gap-1.5 w-full">
+                            <input type="text" id="noteInput_${idx}" value="${dayData.note || ''}" placeholder="請輸入事由或關鍵字"
+                                oninput="updateDayNote(${idx}, this.value)"
+                                class="w-full bg-slate-50 border border-slate-100 hover:border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg px-2 py-1 text-xs outline-none transition-all">
+                            <button onclick="generateAINote(${idx})" id="btnAINote_${idx}" title="✨ 智慧生成加班事由說明"
+                                class="no-print bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 rounded-lg p-1.5 transition-all text-xs flex items-center justify-center shrink-0">
+                                ✨
+                            </button>
+                        </div>
+                    </td>
                     <!-- 勞基法計算明細 -->
-                    <td class="px-4 py-3 text-xs text-slate-400 hidden md:table-cell italic font-mono" id="detailFormula_${idx}">
+                    <td class="px-3 py-3 text-xs text-slate-400 hidden md:table-cell italic font-mono" id="detailFormula_${idx}">
                         -
                     </td>
                     <!-- 當日加班費 -->
-                    <td class="px-4 py-3 text-sm font-bold text-slate-900 text-right" id="dayPayResult_${idx}">
+                    <td class="px-3 py-3 text-sm font-bold text-slate-900 text-right" id="dayPayResult_${idx}">
                         NT$ 0
                     </td>
                 `;
@@ -589,6 +655,38 @@
             state.calendar[index][field] = val;
             
             calculateAll();
+            saveStateToLocalStorage();
+        }
+
+        // 處理輸入框 Enter 鍵跳下一格與自動全選
+        function handleEnterKey(event, index, field) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // 阻止 Enter 的預設換行或預設行為
+                if (field === 'hours') {
+                    // 跳到同日的分鐘輸入框
+                    const nextInput = document.getElementById(`minuteInput_${index}`);
+                    if (nextInput) {
+                        nextInput.focus();
+                        nextInput.select();
+                    }
+                } else if (field === 'minutes') {
+                    // 跳到下一天的小時輸入框
+                    const nextInput = document.getElementById(`hourInput_${index + 1}`);
+                    if (nextInput) {
+                        nextInput.focus();
+                        nextInput.select();
+                    } else {
+                        // 如果是當月最後一天，自動失焦並提醒
+                        event.target.blur();
+                        showToast("🎉 已完成當月最後一天的時數鍵入！");
+                    }
+                }
+            }
+        }
+
+        // 更新備註與事由
+        function updateDayNote(index, value) {
+            state.calendar[index].note = value;
             saveStateToLocalStorage();
         }
 
@@ -693,7 +791,7 @@
         // 核心計算：計算每筆明細及總累計金額 (精密到分鐘)
         function calculateAll() {
             let totalPay = 0;
-            let totalHoursDecimal = 0; // 改用十進位總工時累計
+            let totalHoursDecimal = 0; 
             
             let payWorkday = 0;
             let payRestday = 0;
@@ -703,7 +801,6 @@
             state.calendar.forEach((dayData, idx) => {
                 const h = parseInt(dayData.hours) || 0;
                 const m = parseInt(dayData.minutes) || 0;
-                // 將「分」轉化為小時，例如 45分 = 0.75小時
                 const hours = h + (m / 60); 
                 
                 const hourPay = state.hourPay;
@@ -711,7 +808,6 @@
                 let dayOvertimePay = 0;
                 let formulaStr = "-";
 
-                // 可讀性時間格式化輔助函數
                 const formatTimeSpan = (val) => {
                     const hr = Math.floor(val);
                     const mn = Math.round((val - hr) * 60);
@@ -722,9 +818,6 @@
                     totalHoursDecimal += hours;
 
                     if (dayData.type === 'workday') {
-                        // 【平日加班計算】
-                        // 前兩小時加給 1/3 (1.34倍)
-                        // 後兩小時加給 2/3 (1.67倍)
                         if (hours <= 2) {
                             dayOvertimePay = hours * hourPay * RATE_1_34;
                             formulaStr = `${hourPay} × ${hours.toFixed(2)}時(${formatTimeSpan(hours)}) × 1.34`;
@@ -737,10 +830,6 @@
                         payWorkday += dayOvertimePay;
 
                     } else if (dayData.type === 'restday') {
-                        // 【休息日加班計算】
-                        // 前 2 小時：時薪 × 1.34
-                        // 3 ~ 8 小時：時薪 × 1.67
-                        // 9 ~ 12 小時：時薪 × 2.67 (2又2/3)
                         if (hours <= 2) {
                             dayOvertimePay = hours * hourPay * RATE_1_34;
                             formulaStr = `${hourPay} × ${hours.toFixed(2)}時(${formatTimeSpan(hours)}) × 1.34`;
@@ -759,13 +848,9 @@
                         payRestday += dayOvertimePay;
 
                     } else if (dayData.type === 'holiday') {
-                        // 【例假日加班計算】(天災、事變、突發事件)
-                        // 1 ~ 8 小時：直接加發 1 日薪資 (不論時數，只要出勤即給 8 小時，且需要事後補假一日)
-                        // 9 ~ 10 小時：時薪 × 1.34
-                        // 11 ~ 12 小時：時薪 × 1.67
                         if (hours <= 8) {
-                            dayOvertimePay = dayPay; // 加發一日工資
-                            formulaStr = `直接加發一日薪資 NT$ ${dayPay} (且應補假一日) [工時:${formatTimeSpan(hours)}]`;
+                            dayOvertimePay = dayPay; 
+                            formulaStr = `加發一日薪資 NT$ ${dayPay} (且應補假) [工時:${formatTimeSpan(hours)}]`;
                         } else if (hours <= 10) {
                             const firstPart = dayPay;
                             const secondPart = (hours - 8) * hourPay * RATE_1_34;
@@ -781,13 +866,9 @@
                         payHoliday += dayOvertimePay;
 
                     } else if (dayData.type === 'national') {
-                        // 【國定假日/特休加班計算】
-                        // 1 ~ 8 小時：直接加發 1 日薪資
-                        // 9 ~ 10 小時：時薪 × 1.34
-                        // 11 ~ 12 小時：時薪 × 1.67
                         if (hours <= 8) {
-                            dayOvertimePay = dayPay; // 加發一日工資
-                            formulaStr = `直接加發一日工資 NT$ ${dayPay} [工時:${formatTimeSpan(hours)}]`;
+                            dayOvertimePay = dayPay; 
+                            formulaStr = `加發一日工資 NT$ ${dayPay} [工時:${formatTimeSpan(hours)}]`;
                         } else if (hours <= 10) {
                             const firstPart = dayPay;
                             const secondPart = (hours - 8) * hourPay * RATE_1_34;
@@ -804,9 +885,8 @@
                     }
                 }
 
-                dayOvertimePay = Math.round(dayOvertimePay); // 四捨五入至整數
+                dayOvertimePay = Math.round(dayOvertimePay); 
 
-                // 渲染明細與金額
                 const payResultCell = document.getElementById(`dayPayResult_${idx}`);
                 const formulaCell = document.getElementById(`detailFormula_${idx}`);
                 
@@ -820,7 +900,6 @@
                 totalPay += dayOvertimePay;
             });
 
-            // 更新左側面板總計 (拆分回時、分顯示)
             const totH = Math.floor(totalHoursDecimal);
             const totM = Math.round((totalHoursDecimal - totH) * 60);
             const totalHoursStr = totM > 0 ? `${totH} 小時 ${totM} 分鐘` : `${totH} 小時`;
@@ -831,13 +910,11 @@
             const totalEst = Math.round(state.salary + totalPay);
             document.getElementById('totalEstimatedSalary').textContent = `NT$ ${formatNumber(totalEst)}`;
 
-            // 結構圓條與細項展示
             document.getElementById('lblWorkdayPay').textContent = `NT$ ${formatNumber(Math.round(payWorkday))}`;
             document.getElementById('lblRestdayPay').textContent = `NT$ ${formatNumber(Math.round(payRestday))}`;
             document.getElementById('lblHolidayPay').textContent = `NT$ ${formatNumber(Math.round(payHoliday))}`;
             document.getElementById('lblNationalPay').textContent = `NT$ ${formatNumber(Math.round(payNational))}`;
 
-            // 計算圓柱比率
             const grandTotal = payWorkday + payRestday + payHoliday + payNational;
             if (grandTotal > 0) {
                 document.getElementById('barWorkday').style.width = `${(payWorkday / grandTotal) * 100}%`;
@@ -850,6 +927,196 @@
                 document.getElementById('barHoliday').style.width = '0%';
                 document.getElementById('barNational').style.width = '0%';
             }
+        }
+
+        // 呼叫 Gemini API 核心函式 (指數退避重試 5 次)
+        async function callGeminiWithRetry(promptText, systemPrompt = "") {
+            const apiKey = ""; // 執行環境會在運行時動態代入金鑰
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: promptText }] }]
+            };
+            if (systemPrompt) {
+                payload.systemInstruction = { parts: [{ text: systemPrompt }] };
+            }
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data.candidates?.[0]?.content?.parts?.[0]?.text || "無回傳內容";
+                    }
+                } catch (error) {
+                    // 根據規定：重試期間不將錯誤輸出至 console
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2; // 指數級別增加等待時間 (1s, 2s, 4s, 8s, 16s)
+            }
+            throw new Error("AI 助理目前連線忙碌中，請稍後再試。");
+        }
+
+        // AI 功能 1：智慧生成加班事由說明
+        async function generateAINote(index) {
+            const dayData = state.calendar[index];
+            const noteInput = document.getElementById(`noteInput_${index}`);
+            const btn = document.getElementById(`btnAINote_${index}`);
+            const rawKeyword = noteInput.value.trim();
+
+            if (!rawKeyword) {
+                showToast("請在事由欄中輸入簡單的關鍵字或事件（例如：對帳、處理伺服器當機）");
+                return;
+            }
+
+            // 讀取當天工時與班別
+            const h = parseInt(dayData.hours) || 0;
+            const m = parseInt(dayData.minutes) || 0;
+            const timeStr = m > 0 ? `${h}小時${m}分` : `${h}小時`;
+            
+            const typeNames = { workday: '工作日', restday: '休息日', holiday: '例假日', national: '國定/特休' };
+            const dayTypeStr = typeNames[dayData.type];
+
+            btn.innerHTML = "⏳";
+            btn.disabled = true;
+
+            const systemPrompt = "你是一位專業的台灣企業人資主管。你的任務是將使用者輸入的粗糙簡短加班理由或關鍵字，轉化為一句文字得體、語氣客觀專業、且符合勞動稽核與公司內部簽核要求的正式『加班理由備註說明』。";
+            const prompt = `請針對以下加班資訊，將關鍵字『${rawKeyword}』擴寫成一句正式且專業的加班原因申報文字。
+加班日期：${dayData.dateStr} (週${dayData.dayOfWeek}，屬於${dayTypeStr})
+加班工時：${timeStr}
+只需回傳一句約 20 到 40 字左右的中文申報原因，不需任何前言、結論、括號或多餘格式。`;
+
+            try {
+                const aiResult = await callGeminiWithRetry(prompt, systemPrompt);
+                const finalResult = aiResult.replace(/["'「」]/g, "").trim();
+                
+                noteInput.value = finalResult;
+                state.calendar[index].note = finalResult;
+                saveStateToLocalStorage();
+                showToast("✨ AI 已成功為您優化加班理由！");
+            } catch (error) {
+                showToast(error.message);
+            } finally {
+                btn.innerHTML = "✨";
+                btn.disabled = false;
+            }
+        }
+
+        // AI 功能 2：智慧勞基法諮詢助理
+        async function askAILaborLaw() {
+            const input = document.getElementById('aiQuestionInput');
+            const answerBox = document.getElementById('aiConsultAnswer');
+            const btn = document.getElementById('btnAskAI');
+            const question = input.value.trim();
+
+            if (!question) {
+                showToast("請先輸入您想詢問的法規問題。");
+                return;
+            }
+
+            btn.innerHTML = "⏳ AI 思考中...";
+            btn.disabled = true;
+            answerBox.classList.remove('hidden');
+            answerBox.innerHTML = `<div class="flex items-center gap-1.5 text-slate-500"><span class="animate-bounce">●</span><span class="animate-bounce delay-100">●</span><span class="animate-bounce delay-200">●</span> 正在調閱中華民國勞基法規與解釋令...</div>`;
+
+            const systemPrompt = "你是一位精通中華民國勞動基準法（勞基法）、勞動部解釋令、實務勞資爭議處理的資防顧問。請以專業、客觀、親切且條理清晰的態度解答使用者關於加班、補休、彈性工時、特休、例假或國定假日等權益問題。請使用繁體中文（台灣習慣用語），適當加上重點標示，且內容必須完全符合台灣法律。";
+            
+            try {
+                const answer = await callGeminiWithRetry(question, systemPrompt);
+                answerBox.innerHTML = `<strong>🙋 您的問題：</strong><br>${question}<br><br><strong>🤖 AI 專業諮詢回覆：</strong><br>${answer}`;
+                input.value = "";
+            } catch (error) {
+                answerBox.innerHTML = `<span class="text-red-500">❌ ${error.message}</span>`;
+            } finally {
+                btn.innerHTML = "✨ 詢問智慧法規助理";
+                btn.disabled = false;
+            }
+        }
+
+        // AI 功能 3：當月加班健康與勞基法合規分析報告
+        async function generateAIReport() {
+            const modal = document.getElementById('aiReportModal');
+            const content = document.getElementById('aiReportContent');
+
+            // 統計資料準備
+            let totalHoursDecimal = 0;
+            let countWorkday = 0, countRestday = 0, countHoliday = 0, countNational = 0;
+            let maxOvertimeInADay = 0;
+
+            state.calendar.forEach(day => {
+                const h = parseInt(day.hours) || 0;
+                const m = parseInt(day.minutes) || 0;
+                const hours = h + (m / 60);
+                if (hours > 0) {
+                    totalHoursDecimal += hours;
+                    if (day.type === 'workday') countWorkday++;
+                    else if (day.type === 'restday') countRestday++;
+                    else if (day.type === 'holiday') countHoliday++;
+                    else if (day.type === 'national') countNational++;
+
+                    if (hours > maxOvertimeInADay) maxOvertimeInADay = hours;
+                }
+            });
+
+            modal.classList.remove('hidden');
+            content.innerHTML = `<div class="flex flex-col items-center justify-center py-10 gap-3">
+                <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-xs text-slate-500 font-bold">正在為您統整當月加班結構、計算合規安全指數...</span>
+            </div>`;
+
+            const reportPrompt = `請分析以下員工在 ${state.year} 年 ${state.month} 月的加班統計數據，並撰寫一份專業的『加班費分析與健康管理報告』。
+            
+數據統計如下：
+- 月薪基數：NT$ ${state.salary} 元 (折算時薪為 NT$ ${state.hourPay} 元)
+- 當月總加班時數：${totalHoursDecimal.toFixed(2)} 小時
+- 加班天數分布：工作日加班 ${countWorkday} 天、休息日 ${countRestday} 天、例假日 ${countHoliday} 天、國定/特休 ${countNational} 天
+- 單日最大加班時數：${maxOvertimeInADay.toFixed(2)} 小時
+
+請包含以下幾個重點結構，並使用繁體中文及台灣用語撰寫：
+1. **法規風險與合規評估**：針對一個月法定延長工時上限 46 小時 (若經工會或勞資會議同意得放寬至 54 小時)、以及單日正常加延長工時不得超過 12 小時等規範，給予合規診斷（注意：若該月無加班、或加班在安全範圍，請給予肯定；若例假日有出勤，請提醒非天災、事變等不可令其加班之條款與補假一日規定）。
+2. **加班費結構點評**：簡要分析該月加班費來源與效率。
+3. **健康與過勞防範建議**：若時數過高，提供減少加班之建議或休息排程指引。
+請用簡潔清晰的條列式和溫暖的語調。`;
+
+            try {
+                const reportResult = await callGeminiWithRetry(reportPrompt, "你是一位專業的企業健康管理顧問（Occupational Health Consultant）及勞務法令專家，善於用數據為同仁提供溫暖有建設性的回饋。");
+                
+                // 將 markdown 格式的星號轉化為簡單 HTML
+                let formattedHtml = reportResult
+                    .replace(/\n\n/g, '<br><br>')
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-950 font-bold">$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em class="text-slate-600">$1</em>');
+
+                content.innerHTML = `
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-4 text-xs">
+                        <h4 class="font-bold text-indigo-950 mb-1">當月快檢總計</h4>
+                        <ul class="grid grid-cols-2 gap-y-1 text-slate-700">
+                            <li>📅 統計月份：<strong>${state.year}年${state.month}月</strong></li>
+                            <li>⏱️ 總加班時數：<strong>${totalHoursDecimal.toFixed(1)} 小時</strong></li>
+                            <li>⚠️ 勞基法上限：<strong>46 小時 / 54 小時</strong></li>
+                            <li>💥 單日最高加班：<strong>${maxOvertimeInADay.toFixed(1)} 小時</strong></li>
+                        </ul>
+                    </div>
+                    <div class="text-xs text-slate-700 leading-relaxed font-sans">
+                        ${formattedHtml}
+                    </div>
+                `;
+            } catch (error) {
+                content.innerHTML = `<div class="text-center text-red-500 py-10">${error.message}</div>`;
+            }
+        }
+
+        function closeAIReportModal() {
+            document.getElementById('aiReportModal').classList.add('hidden');
         }
 
         // LocalStorage 資料存取
@@ -915,12 +1182,12 @@
                 setTimeout(() => {
                     toast.remove();
                 }, 300);
-            }, 3000);
+            }, 3500);
         }
 
-        // 匯出當月報表為 CSV
+        // 匯出當月報表為 CSV (包含事由備註欄位)
         function exportToCSV() {
-            const headers = ['日期', '星期', '班別', '加班工時', '當日加班費估算'];
+            const headers = ['日期', '星期', '班別', '加班工時', '加班事由備註', '當日加班費估算'];
             const typeNames = {
                 workday: '工作日',
                 restday: '休息日',
@@ -934,7 +1201,6 @@
             csvContent += headers.join(',') + '\n';
 
             state.calendar.forEach((dayData, idx) => {
-                // 重新計算確保數值最新
                 const h = parseInt(dayData.hours) || 0;
                 const m = parseInt(dayData.minutes) || 0;
                 const hours = h + (m / 60);
@@ -960,12 +1226,14 @@
                 dayOvertimePay = Math.round(dayOvertimePay);
 
                 const timeDisplayStr = h > 0 || m > 0 ? `${h}時${m}分` : '0';
+                const noteClean = (dayData.note || '').replace(/,/g, '，'); // 避免 CSV 逗號跑位
 
                 const row = [
                     `${state.month}/${dayData.day}`,
                     `週${dayData.dayOfWeek}`,
                     typeNames[dayData.type],
                     timeDisplayStr,
+                    noteClean,
                     dayOvertimePay
                 ];
                 csvContent += row.join(',') + '\n';
